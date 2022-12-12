@@ -91,7 +91,6 @@ class PostController extends Controller
         $message;
         if(!$user)
         {
-            $route='signup';
             $status='error';
             $message='Invalid URL';
         }
@@ -99,7 +98,7 @@ class PostController extends Controller
         {
             if($user->email_verified_at)
             {
-                $route='signup';
+
                 $status='error';
                 $message='Email Already Exist';
             }
@@ -109,13 +108,12 @@ class PostController extends Controller
                     'email_verified_at'=>\Carbon\carbon::now(),
                     'verified'=>true
                 ]);
-                $route='signup';
                 $status='Success';
                 $message='Email Successfully Verified';
                
             }
         }
-        return redirect()->route($route)->with($status,$message);
+        return \redirect(route('home'))->with($status,$message);
     }
 
     /**
@@ -169,20 +167,23 @@ class PostController extends Controller
         $user=post::where($email);
         if(count($user) < 1)
         {
-
-            return redirect()->back()->withErrors(['email' => trans('User does not exist')]);
+            $status="error";
+            $message="User does not exist";
         }
         $tokenData = DB::table('posts')->where('email', $email)->first();
 
         if ($this->sendResetEmail($request->email, $tokenData->email_verification_code)) 
         {
-            return redirect()->back()->with('status', trans('A reset link has been sent to your email address.'));
+            $status="error";
+            $message="Emaill Limk has been send";
         } 
         else
         {
-            return redirect()->back()->withErrors(['error' => trans('A Network Error occurred. Please try again.')]);
+            $status="error";
+            $message="Network error occur";
+            
         }
-        
+        return \redirect(route('home'))->with($status,$message);  
     }
     // send reset email
     private function sendResetEmail($email, $token)
@@ -207,14 +208,20 @@ class PostController extends Controller
         $user=post::where($email);
         if($user)
         {
+            $status="success";
+            $message="email has been send";
+
            //return Redirect::action('PostController@reset');
-           return redirect()->action([PostController::class, 'reset'])->with('email', $email);
+        
             
         }
         else
         {
-            return response()->json(['status'=>"error",'message'=>"Account not exist"],404);
+            $status="error";
+            $message="Account not exist";
+            
         }
+        return \redirect(route('home'))->with($status,$message);
     }
     /**
      * Show the form for editing the specified resource.
